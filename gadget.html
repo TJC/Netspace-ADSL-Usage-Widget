@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <style type='text/css'>
+BODY {
+  margin: 0px;
+  width: 130px;
+  height: 87px;
+  text-align: center;
+  }
+#gadget {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  color: #bbbbbb;
+  margin-top: 10px;
+  }
+  </style>
+  <script language='JavaScript'>
+var gadgetName = false;
+var gadgets = [ ];
+
+
+function init() {
+  System.Gadget.settingsUI = "settings.html";
+  System.Gadget.onSettingsClosed = SettingsClosed;
+  System.Gadget.background = "background.png";
+  }
+
+
+function loadGadget() {
+  var gadget = gadgets[gadgetName];
+
+  // If gadget doesn't exist in cache
+  if (!gadget) {
+    fetchGadget();
+    return;
+    }
+
+  // If gadget hasn't been updated within 24hrs
+  else if (((new Date()).getTime() - gadget.lastUpdated) > (24 * 60 * 60 * 1000)) {
+    fetchGadget();
+    return;
+    }
+
+  // Run the gadget
+  gadget.execute();
+  }
+
+
+function fetchGadget() {
+    document.getElementById('gadget').innerHTML = "<br /><br /><br />Fetching gadget..";
+    var request = false;
+    if (window.XMLHttpRequest) { request = new XMLHttpRequest(); }
+    else if (window.ActiveXObject) { request = new ActiveXObject("Microsoft.XMLHTTP"); }
+    request.open('GET', "http://www.claytontuffin.com/gadgets/js/"+gadgetName+".json?timestamp="+(new Date()).getTime(), true);
+    request.onreadystatechange = function() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+
+          // Process the JSON
+          var json = eval('('+request.responseText+')');
+          gadgets[json.id] = json;
+          gadgets[json.id].lastUpdated = (new Date()).getTime();
+
+          // Execute the fetched Gadget
+          loadGadget();
+          }
+        else if (request.status == 404) {
+          document.getElementById('gadget').innerHTML = "<br /><br /><br />Gadget not found.";
+          }
+        else if (request.status == 500) {
+          document.getElementById('gadget').innerHTML = "<br /><br /><br />Error with fetch.";
+          }
+        }
+      }
+    request.send("");
+  }
+
+
+function SettingsClosed(event){
+  if (event.closeAction == event.Action.commit) {
+
+    // Settings window closed. Retrieve the gadget name and execute the gadget.
+    gadgetName = System.Gadget.Settings.readString("gadgetName");
+    document.getElementById('gadget').innerHTML = "<br /><br /><br />Loading gadget..";
+    loadGadget();
+    }
+  else if (event.closeAction == event.Action.cancel) {
+    // Do nothing.
+    }
+  }
+
+  </script>
+</head>
+<body onLoad='init();'>
+  <div id='gadget'><br /><br /><br />Please set options.</div>
+</body>
+</html>

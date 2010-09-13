@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<gadget>
+  <name>Clayton Tuffin</name>
+  <namespace>Clayton Tuffin</namespace>
+  <version>1.0</version>
+  <author name="Clayton Tuffin">
+    <info url="http://www.claytontuffin.com/gadgets/" text="www.claytontuffin.com" />
+    <logo src="icon.png" />
+  </author>
+  <copyright>&#0169; 2009</copyright>
+  <description>Gadgets by ClaytonTuffin.com</description>
+  <icons>
+    <icon width="64" height="64" src="icon.png" />
+  </icons>
+  <hosts>
+    <host name="sidebar">
+      <base type="HTML" apiVersion="1.0" src="gadget.html" />
+      <permissions>full</permissions>
+      <platform minPlatformVersion="0.3" />
+    </host>
+  </hosts>
+</gadget>
