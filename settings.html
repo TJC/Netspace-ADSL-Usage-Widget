@@ -35,121 +35,63 @@ LEGEND {
   </style>
   <script language='JavaScript'>
 var options = false;
-var currentGadgetID = false;
 
 function init() {
   System.Gadget.onSettingsClosing = SettingsClosing;
 
-  document.getElementById('gadget').innerHTML = "<center>Loading options..</center>";
-
   // This, in effect, moves the whole Options window up the screen if its too close to the bottom.
-  setTimeout("document.body.style.height = 80;", 500);
+  // setTimeout("document.body.style.height = 80;", 500);
 
-  // Ajax call to display the Options
-  fetchOptions();
-  }
-
-
-function fetchOptions() {
-  document.getElementById('gadget').innerHTML = "<center>Fetching options..</center>";
-  var request = false;
-  if (window.XMLHttpRequest) { request = new XMLHttpRequest(); }
-  else if (window.ActiveXObject) { request = new ActiveXObject("Microsoft.XMLHTTP"); }
-  request.open('GET', "http://www.claytontuffin.com/gadgets/js/options.json?"+(new Date()).getTime(), true);
-  request.onreadystatechange = function() {
-    if (request.readyState == 4) {
-      if (request.status == 200) {
-
-        // Process the JSON and display the fetched options
-        var json = eval('('+request.responseText+')');
-        options = json;
-        displayOptions();
-        }
-      else if (request.status == 404) {
-        document.getElementById('gadget').innerHTML = "<center>Options not found.</center>";
-        }
-      else if (request.status == 500) {
-        document.getElementById('gadget').innerHTML = "<center>Error with fetch.</center>";
-        }
-      }
-    }
-  request.send("");
-  }
+  populateOptions();
+}
 
 
-function displayOptions() {
-  var gadgetName = System.Gadget.Settings.readString("gadgetName");
-  var gadgetID = -1;
+function populateOptions() {
 
-  // Display select list of gadgets
-  var html = "This gadget is a:<br />"
-  +"<select style='width:100%;' onChange='displayOptionsFor(this.options[this.selectedIndex].value);'>"
-  +"<option value='x'>-- Choose Gadget --</option>";
-  for (var i=0; i<options.gadgets.length; i++) {
-    var selected = (gadgetName == options.gadgets[i].name) ? "selected" : "";
-    if (gadgetName == options.gadgets[i].name) { gadgetID = i; }
-    html = html+"<option value='"+i+"' "+selected+">"+options.gadgets[i].name+"</option>";
-    }
-  html = html
-  +"</select>"
-  +"<div id='inputs'><br /></div>"
-  +"<i>&copy;2009 <a href='http://www.claytontuffin.com' target='_new'>ClaytonTuffin.com</a></i>";
-  document.getElementById('gadget').innerHTML = html;
+  var userName = System.Gadget.Settings.readString("Username");
+  var passWord = System.Gadget.Settings.readString("Password");
+  document.getElementById('Username').value = userName;
+  document.getElementById('Password').value = passWord;
 
   // Resize the gadget Settings window
-  document.body.style.height = parseInt(document.all("gadget").offsetHeight)+20;
-
-  // Pre-display the text inputs if this gadget is already configured
-  if (gadgetID >= 0)
-    displayOptionsFor(gadgetID);
-  }
-
-
-function displayOptionsFor(id) {
-  currentGadgetID = id;
-
-  // Display the fieldset of inputs
-  var html = (id == "x") ? "" : "<fieldset><legend>Gadget Options</legend>"+options.gadgets[id].inputhtml+"</fieldset>";
-  document.getElementById('inputs').innerHTML = html;
-
-  // Resize the gadget Settings window
-  document.body.style.height = parseInt(document.all("gadget").offsetHeight)+20;
-
-  // Pre-populate the text inputs if this gadget is already configured
-  populateOptionsFor(id);
-  }
-
-
-function populateOptionsFor(id) {
-  var gadgetName = System.Gadget.Settings.readString("gadgetName");
-
-  // For each text input, set the value
-  for (var i=0; i<options.gadgets[id].inputs.length; i++) {
-    var value = System.Gadget.Settings.readString(gadgetName+" "+options.gadgets[id].inputs[i]);
-    document.getElementById(gadgetName+" "+options.gadgets[id].inputs[i]).value = value;
-    }
-
-  // Resize the gadget Settings window
-  document.body.style.height = parseInt(document.all("gadget").offsetHeight)+20;
-  }
+  // document.body.style.height = parseInt(document.all("gadget").offsetHeight)+20;
+}
 
 
 // Called when the Settings window is closing
 function SettingsClosing(event) {
-  var gadgetName = options.gadgets[currentGadgetID].name;
-  System.Gadget.Settings.writeString("gadgetName", gadgetName);
+
   if (event.closeAction == event.Action.commit) {
-    for (var i=0; i<options.gadgets[currentGadgetID].inputs.length; i++) {
-      var inputName = options.gadgets[currentGadgetID].inputs[i];
-      System.Gadget.Settings.writeString(gadgetName+" "+inputName, document.getElementById(gadgetName+" "+inputName).value);
-      }
+      var userName = document.getElementById('Username').value;
+      var passWord = document.getElementById('Password').value;
+      System.Gadget.Settings.writeString("Username", userName);
+      System.Gadget.Settings.writeString("Password", passWord);
     }
 
   event.cancel = false;
-  }
-  </script>
+}
+</script>
+
 </head>
+
 <body onLoad='init();'>
-  <div id='gadget'><center>Loading options..<center></div>
+<div id='gadget'>
+<fieldset>
+  <legend>Options</legend>
+
+<table border='0'>
+  <tr>
+    <td>Username:</td>
+    <td><input id='Username' type='text' style='width:100px;' /></td>
+  </tr>
+  <tr>
+    <td>Password:</td>
+    <td><input id='Password' type='text' style='width:100px;' /></td>
+  </tr>
+</table>
+
+</fieldset>
+</div>
+
 </body>
 </html>

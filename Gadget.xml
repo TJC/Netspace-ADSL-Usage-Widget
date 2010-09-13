@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <gadget>
-  <name>Clayton Tuffin</name>
-  <namespace>Clayton Tuffin</namespace>
-  <version>1.0</version>
-  <author name="Clayton Tuffin">
-    <info url="http://www.claytontuffin.com/gadgets/" text="www.claytontuffin.com" />
+  <name>TCs Netspace usage widget</name>
+  <namespace>TJC</namespace>
+  <version>1.1</version>
+  <author name="Toby Corkindale">
+    <info url="http://www.dryft.net/wiki/NetspaceUsageWidget" text="www.dryft.net" />
     <logo src="icon.png" />
   </author>
-  <copyright>&#0169; 2009</copyright>
-  <description>Gadgets by ClaytonTuffin.com</description>
+  <copyright>&#0169; 2010</copyright>
+  <description>Netspace usage widget by Toby Corkindale, based on original by Clayton Tuffin</description>
   <icons>
     <icon width="64" height="64" src="icon.png" />
   </icons>

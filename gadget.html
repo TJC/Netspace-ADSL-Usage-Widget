@@ -19,83 +19,133 @@ BODY {
   }
   </style>
   <script language='JavaScript'>
-var gadgetName = false;
-var gadgets = [ ];
-
 
 function init() {
   System.Gadget.settingsUI = "settings.html";
   System.Gadget.onSettingsClosed = SettingsClosed;
   System.Gadget.background = "background.png";
-  }
-
-
-function loadGadget() {
-  var gadget = gadgets[gadgetName];
-
-  // If gadget doesn't exist in cache
-  if (!gadget) {
-    fetchGadget();
-    return;
-    }
-
-  // If gadget hasn't been updated within 24hrs
-  else if (((new Date()).getTime() - gadget.lastUpdated) > (24 * 60 * 60 * 1000)) {
-    fetchGadget();
-    return;
-    }
-
-  // Run the gadget
-  gadget.execute();
-  }
-
-
-function fetchGadget() {
-    document.getElementById('gadget').innerHTML = "<br /><br /><br />Fetching gadget..";
-    var request = false;
-    if (window.XMLHttpRequest) { request = new XMLHttpRequest(); }
-    else if (window.ActiveXObject) { request = new ActiveXObject("Microsoft.XMLHTTP"); }
-    request.open('GET', "http://www.claytontuffin.com/gadgets/js/"+gadgetName+".json?timestamp="+(new Date()).getTime(), true);
-    request.onreadystatechange = function() {
-      if (request.readyState == 4) {
-        if (request.status == 200) {
-
-          // Process the JSON
-          var json = eval('('+request.responseText+')');
-          gadgets[json.id] = json;
-          gadgets[json.id].lastUpdated = (new Date()).getTime();
-
-          // Execute the fetched Gadget
-          loadGadget();
-          }
-        else if (request.status == 404) {
-          document.getElementById('gadget').innerHTML = "<br /><br /><br />Gadget not found.";
-          }
-        else if (request.status == 500) {
-          document.getElementById('gadget').innerHTML = "<br /><br /><br />Error with fetch.";
-          }
-        }
-      }
-    request.send("");
-  }
+  gadgetExecute();
+}
 
 
 function SettingsClosed(event){
   if (event.closeAction == event.Action.commit) {
-
-    // Settings window closed. Retrieve the gadget name and execute the gadget.
-    gadgetName = System.Gadget.Settings.readString("gadgetName");
-    document.getElementById('gadget').innerHTML = "<br /><br /><br />Loading gadget..";
-    loadGadget();
-    }
+    gadgetExecute();
+  }
   else if (event.closeAction == event.Action.cancel) {
     // Do nothing.
-    }
   }
+}
+
+function gadgetExecute() {
+  var username = System.Gadget.Settings.readString("Username") || "";
+  var password = System.Gadget.Settings.readString("Password") || "";
+
+  if ((username != '') && (password != '')) {
+    document.getElementById('gadget').innerHTML = "<br /><br /><br />Fetching data..";
+    var request = false;
+    if (window.XMLHttpRequest) { request = new XMLHttpRequest(); }
+    else if (window.ActiveXObject) { request = new ActiveXObject("Microsoft.XMLHTTP"); }
+    request.open('GET', "https://"+username+":"+password+"@usage.netspace.net.au/usage-meter/adslusage?version=3&granularity=MONTH&timestamp="+(new Date()).getTime(), true);
+
+    request.onreadystatechange = function() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var xmlDoc = request.responseXML.getElementsByTagName("USAGE").item(0);
+          displayResult(xmlDoc);
+          }
+        else {
+          document.getElementById('gadget').innerHTML = "<br /><br /><br />Wrong password.";
+          }
+        }
+      }
+    request.send("timestamp="+(new Date()).getTime());
+  }
+  else {
+    document.getElementById('gadget').innerHTML = "<br /><br /><br />Set user/password.";
+  }
+}
+
+
+function displayResult(xmlDoc) {
+  var usage = new Array();
+  document.getElementById('gadget').innerHTML = "";
+
+  // Get days-remaining
+  var startOfMonthText = xmlDoc.getAttribute("START_DATE");
+  var endOfMonthText = xmlDoc.getAttribute("END_DATE");
+  var startParts = startOfMonthText.split("-");
+  var endParts = endOfMonthText.split("-");
+  var startOfMonth = new Date(startParts[2], startParts[1]-1, startParts[0]);
+  var endOfMonth = new Date(endParts[2], endParts[1]-1, endParts[0]);
+  var today = new Date();
+  var day = 1000*60*60*24;
+  var daysInMonth = Math.ceil((endOfMonth.getTime() - startOfMonth.getTime()) / day) + 1;
+  var daysLeft = Math.ceil(( endOfMonth.getTime() - today.getTime() ) / (day));
+  var daysUsed = Math.ceil((today.getTime() - startOfMonth.getTime()) / day);
+  var daysUsedPercent = parseInt(daysUsed / daysInMonth * 100);
+
+  document.getElementById('gadget').innerHTML = 
+   "Day "+daysUsed+" of "+daysInMonth+"<br />"
+  +"<table border='0' cellspacing='0' cellpadding='0' style='width:100px;border:1px solid #555555;margin:1px;'><tr>"
+  +"<td height='4' width='"+daysUsedPercent+"' bgcolor='#00ffff'></td>"
+  +"<td height='4' width='"+(100-daysUsedPercent)+"' bgcolor='#000000'></td>"
+  +"</tr></table>";
+
+  // Get the nodes containing the relevant data
+  var limits = xmlDoc.getElementsByTagName("PLAN")[0].getElementsByTagName("LIMIT");
+  var traffic = xmlDoc.getElementsByTagName("TRAFFIC")[0].getElementsByTagName("DATA");
+
+  // For each time period, get the amount downloaded, and the limit
+  for (var i=0; i<limits.length; i++) {
+
+    var limit = limits[i].getAttribute("MEGABYTES");
+
+    // Check for additional purchased data blocks
+    if (xmlDoc.getElementsByTagName("DATABLOCKS")) {
+      if (xmlDoc.getElementsByTagName("DATABLOCKS")[0]) {
+        var blocks = xmlDoc.getElementsByTagName("DATABLOCKS")[0].getElementsByTagName("LIMIT");
+        for (var j=0; j<blocks.length; j++) {
+          if (blocks[j].getAttribute("Name") == limits[i].getAttribute("NAME"))
+            limit = parseInt(limit) + parseInt(blocks[j].getElementsByTagName("BLOCK")[0].getAttribute("MEGABYTES"));
+          }
+        }
+      }
+
+    usage[limits[i].getAttribute("NAME")] = { "limit": limit };
+
+    for (var j=0; j<traffic.length; j++) {
+      if (traffic[j].getAttribute("TYPE") == limits[i].getAttribute("NAME"))
+        usage[traffic[j].getAttribute("TYPE")].downloaded = traffic[j].getAttribute("DOWNLOADS");
+      }
+    }
+
+  // Print the entries
+  for (var i in usage) {
+
+    var downloaded = usage[i].downloaded;
+    var limit = usage[i].limit;
+    var percent = parseInt(downloaded / limit * 100);
+
+    document.getElementById('gadget').innerHTML = document.getElementById('gadget').innerHTML
+    +downloaded+" / "+limit+"MB<br />"
+    +"<table border='0' cellspacing='0' cellpadding='0' style='width:100px;border:1px solid #555555;margin:1px;'><tr>"
+    +"<td height='4' width='"+percent+"' bgcolor='#00ffff'></td>"
+    +"<td height='4' width='"+(100-percent)+"' bgcolor='#000000'></td>"
+    +"</tr></table>";
+    }
+
+  setTimeout("fetchDetails();", 1000 * 60 * 60 * 3);
+  }
+
 
   </script>
 </head>
 <body onLoad='init();'>
-  <div id='gadget'><br /><br /><br />Please set options.</div>
+  <div id='gadget'>
+
+
+
+  </div>
 </body>
 </html>
