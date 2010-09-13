@@ -1,0 +1,19 @@
+Hi,
+This is a ADSL usage monitoring widget, for Netspace's ADSL services.
+
+It is based upon work done by one Clayton Tuffin; however it seems they
+abandoned the project, and it had a bad bug and somewhat worrying behaviour.
+(It would retrieve and execute code from his server every time it ran..)
+
+This version has all the code inline, with no remote-execution stuff at all.
+
+It also fixes the bug that caused the old version to always require you to
+re-enter the settings every time it loaded.
+
+To use, download all the files and add them to a ZIP file, then rename it to
+NetspaceWidget.gadget
+Or just download the prepackaged version from
+http://dryft.net/netspace/netspace_usage_widget.gadget
+
+-Toby
+
