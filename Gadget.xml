@@ -2,7 +2,7 @@
 <gadget>
   <name>TCs Netspace usage widget</name>
   <namespace>TJC</namespace>
-  <version>1.1</version>
+  <version>1.2</version>
   <author name="Toby Corkindale">
     <info url="http://www.dryft.net/wiki/NetspaceUsageWidget" text="www.dryft.net" />
     <logo src="icon.png" />

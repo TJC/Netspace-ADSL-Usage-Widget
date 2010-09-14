@@ -114,9 +114,11 @@ function displayResult(xmlDoc) {
 
     usage[limits[i].getAttribute("NAME")] = { "limit": limit };
 
+    var uploadsToo = parseInt(System.Gadget.Settings.readString("UploadsToo")) || 0;
+
     for (var j=0; j<traffic.length; j++) {
       if (traffic[j].getAttribute("TYPE") == limits[i].getAttribute("NAME"))
-        usage[traffic[j].getAttribute("TYPE")].downloaded = traffic[j].getAttribute("DOWNLOADS");
+        usage[traffic[j].getAttribute("TYPE")].downloaded = parseInt(traffic[j].getAttribute("DOWNLOADS")) + (parseInt(traffic[j].getAttribute("UPLOADS")) * uploadsToo);
       }
     }
 

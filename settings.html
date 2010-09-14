@@ -50,8 +50,10 @@ function populateOptions() {
 
   var userName = System.Gadget.Settings.readString("Username");
   var passWord = System.Gadget.Settings.readString("Password");
+  var uploadsToo = System.Gadget.Settings.readString("UploadsToo");
   document.getElementById('Username').value = userName;
   document.getElementById('Password').value = passWord;
+  document.getElementById('uploadstoo').checked = (parseInt(uploadsToo) == 1);
 
   // Resize the gadget Settings window
   // document.body.style.height = parseInt(document.all("gadget").offsetHeight)+20;
@@ -64,8 +66,10 @@ function SettingsClosing(event) {
   if (event.closeAction == event.Action.commit) {
       var userName = document.getElementById('Username').value;
       var passWord = document.getElementById('Password').value;
+      var uploadstoo = (document.getElementById('uploadstoo').checked ? 1 : 0);
       System.Gadget.Settings.writeString("Username", userName);
       System.Gadget.Settings.writeString("Password", passWord);
+      System.Gadget.Settings.writeString("UploadsToo", uploadstoo);
     }
 
   event.cancel = false;
@@ -87,6 +91,10 @@ function SettingsClosing(event) {
   <tr>
     <td>Password:</td>
     <td><input id='Password' type='text' style='width:100px;' /></td>
+  </tr>
+  <tr>
+    <td>Include uploads?</td>
+    <td><input type='checkbox' id='uploadstoo' value='1' /></td>
   </tr>
 </table>
 
