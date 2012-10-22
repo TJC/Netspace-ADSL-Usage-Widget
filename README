@@ -1,11 +1,13 @@
-Hi,
-This is a ADSL usage monitoring widget, for Netspace's ADSL services.
+This was an ADSL usage monitoring widget for Windows Vista/7,
+for Netspace's ADSL services.
 
-It is based upon work done by one Clayton Tuffin; however it seems they
-abandoned the project, and it had a bad bug and somewhat worrying behaviour.
-(It would retrieve and execute code from his server every time it ran..)
+It is based upon work done by a previous author who had abandoned the project
+by the time I created this one. (I have removed their name by request)
+However now I, in turn, have abandoned this project, and am unable to offer
+further support, bugfixes or improvements.
 
-This version has all the code inline, with no remote-execution stuff at all.
+Compared to the previous version, my version has all the code inline, with no
+scary remote-execution stuff going on.
 
 It also fixes the bug that caused the old version to always require you to
 re-enter the settings every time it loaded.
